@@ -1,3 +1,7 @@
+use error::BResult;
+
+mod error;
+
 pub enum Base {
     Binary,
     Octal,
@@ -5,7 +9,7 @@ pub enum Base {
     Hexadecimal,
 }
 
-pub fn parse(input: &str, from: Base) -> i64 {
+pub fn parse(input: &str, from: Base) -> BResult<i64> {
     let trimmed = match from {
         Base::Binary => input.strip_prefix("0b").unwrap_or(input),
         Base::Octal => input.strip_prefix("0o").unwrap_or(input),
@@ -13,12 +17,12 @@ pub fn parse(input: &str, from: Base) -> i64 {
         Base::Decimal => input,
     };
     let value = match from {
-        Base::Binary => i64::from_str_radix(trimmed, 2).unwrap(),
-        Base::Octal => i64::from_str_radix(trimmed, 8).unwrap(),
-        Base::Hexadecimal => i64::from_str_radix(trimmed, 16).unwrap(),
-        Base::Decimal => i64::from_str_radix(trimmed, 10).unwrap(),
+        Base::Binary => i64::from_str_radix(trimmed, 2)?,
+        Base::Octal => i64::from_str_radix(trimmed, 8)?,
+        Base::Hexadecimal => i64::from_str_radix(trimmed, 16)?,
+        Base::Decimal => i64::from_str_radix(trimmed, 10)?,
     };
-    value
+    Ok(value)
 }
 
 pub fn convert(input: i64, to: Base) -> String {
@@ -36,12 +40,12 @@ mod tests {
 
     #[test]
     fn test_parse() {
-        assert_eq!(parse("5001", Base::Decimal), 5001);
-        assert_eq!(parse("0xF", Base::Hexadecimal), 15);
-        assert_eq!(parse("1234", Base::Hexadecimal), 4660);
-        assert_eq!(parse("0xDEADBEEF", Base::Hexadecimal), 3735928559);
-        assert_eq!(parse("0b10", Base::Binary), 2);
-        assert_eq!(parse("0o15", Base::Octal), 13);
+        assert_eq!(parse("5001", Base::Decimal).unwrap(), 5001);
+        assert_eq!(parse("0xF", Base::Hexadecimal).unwrap(), 15);
+        assert_eq!(parse("1234", Base::Hexadecimal).unwrap(), 4660);
+        assert_eq!(parse("0xDEADBEEF", Base::Hexadecimal).unwrap(), 3735928559);
+        assert_eq!(parse("0b10", Base::Binary).unwrap(), 2);
+        assert_eq!(parse("0o15", Base::Octal).unwrap(), 13);
     }
 
     #[test]
