@@ -1,15 +1,15 @@
-use baseconverter::parse;
 use clap::Parser;
 use cli::Cli;
-use error::BResult;
+
+use baseconverter::error::BResult;
+use baseconverter::{convert, parse};
 
 mod cli;
-mod error;
 
 fn main() -> BResult<()> {
-    println!("Hello, world!");
     let cli = Cli::parse();
-    let parsed = parse(&cli.input_value, cli.input_base);
-
+    let input = parse(&cli.input_value, cli.input_base)?;
+    let output = convert(input, cli.output_base);
+    println!("{}", output);
     Ok(())
 }

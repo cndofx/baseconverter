@@ -1,6 +1,6 @@
-use error::BResult;
+use crate::error::BResult;
 
-mod error;
+pub mod error;
 
 #[derive(Clone, clap::ValueEnum)]
 pub enum Base {
