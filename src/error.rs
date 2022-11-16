@@ -20,6 +20,24 @@ pub enum BaseConverterError {
         #[label("ensure this is valid {base}")]
         label_pos: (usize, usize),
         base: Base,
-
     },
+
+    #[error("number is too large")]
+    #[diagnostic(
+        code(baseconverter::input_overflow_error),
+        help("ensure your input value fits between -(2^63) and (2^63 - 1)")
+    )]
+    OverflowError {
+        #[source_code]
+        input: String,
+        #[label("ensure this number fits within the limits")]
+        label_pos: (usize, usize),
+    },
+
+    #[error("unknown error")]
+    #[diagnostic(
+        code(baseconverter::unknown_error),
+        help("unknown error, please check your input")
+    )]
+    UnknownError,
 }

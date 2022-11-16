@@ -31,7 +31,7 @@ pub fn strip_input<'a>(input: &'a str, from: Base) -> &'a str {
         Base::Octal => input.strip_prefix("0o").unwrap_or(input),
         Base::Hexadecimal => input.strip_prefix("0x").unwrap_or(input),
         Base::Decimal => input,
-    } 
+    }
 }
 
 pub fn parse_input(input: &str, from: Base) -> BResult<i64> {
@@ -42,10 +42,26 @@ pub fn parse_input(input: &str, from: Base) -> BResult<i64> {
         Base::Hexadecimal => i64::from_str_radix(stripped, 16),
         Base::Decimal => i64::from_str_radix(stripped, 10),
     };
-    value.map_err(|_| error::BaseConverterError::ParseError { input: input.to_string(), base: from, label_pos: (0,input.len()) })
+    
+    value.map_err(|e| {
+        match e.kind() {
+            std::num::IntErrorKind::InvalidDigit => error::BaseConverterError::ParseError {
+                input: input.to_string(),
+                label_pos: (0, input.len()),
+                base: from,
+            },
+            std::num::IntErrorKind::PosOverflow | std::num::IntErrorKind::NegOverflow => {
+                error::BaseConverterError::OverflowError {
+                    input: input.to_string(),
+                    label_pos: (0, input.len()),
+                }
+            }
+            _ => error::BaseConverterError::UnknownError,
+        }
+    })
 }
 
-pub fn format_output(output: i64, to: Base) ->  String {
+pub fn format_output(output: i64, to: Base) -> String {
     match to {
         Base::Binary => format!("0b{:b}", output),
         Base::Octal => format!("0o{:o}", output),
@@ -70,17 +86,34 @@ mod tests {
         assert_eq!(parse_input("5001", Base::Decimal).unwrap(), 5001);
         assert_eq!(parse_input("0xF", Base::Hexadecimal).unwrap(), 15);
         assert_eq!(parse_input("1234", Base::Hexadecimal).unwrap(), 4660);
-        assert_eq!(parse_input("0xDEADBEEF", Base::Hexadecimal).unwrap(), 3735928559);
+        assert_eq!(
+            parse_input("0xDEADBEEF", Base::Hexadecimal).unwrap(),
+            3735928559
+        );
         assert_eq!(parse_input("0b10", Base::Binary).unwrap(), 2);
         assert_eq!(parse_input("0o15", Base::Octal).unwrap(), 13);
     }
 
     #[test]
     fn test_convert() {
-        assert_eq!(convert("5001", Base::Decimal, Base::Decimal).unwrap().1, "5001");
-        assert_eq!(convert("15", Base::Decimal, Base::Hexadecimal).unwrap().1, "0xF");
-        assert_eq!(convert("4660", Base::Decimal, Base::Hexadecimal).unwrap().1, "0x1234");
-        assert_eq!(convert("3735928559", Base::Decimal, Base::Hexadecimal).unwrap().1, "0xDEADBEEF");
+        assert_eq!(
+            convert("5001", Base::Decimal, Base::Decimal).unwrap().1,
+            "5001"
+        );
+        assert_eq!(
+            convert("15", Base::Decimal, Base::Hexadecimal).unwrap().1,
+            "0xF"
+        );
+        assert_eq!(
+            convert("4660", Base::Decimal, Base::Hexadecimal).unwrap().1,
+            "0x1234"
+        );
+        assert_eq!(
+            convert("3735928559", Base::Decimal, Base::Hexadecimal)
+                .unwrap()
+                .1,
+            "0xDEADBEEF"
+        );
         assert_eq!(convert("2", Base::Decimal, Base::Binary).unwrap().1, "0b10");
         assert_eq!(convert("13", Base::Decimal, Base::Octal).unwrap().1, "0o15");
     }
