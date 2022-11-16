@@ -42,7 +42,7 @@ pub fn parse_input(input: &str, from: Base) -> BResult<i64> {
         Base::Hexadecimal => i64::from_str_radix(stripped, 16),
         Base::Decimal => i64::from_str_radix(stripped, 10),
     };
-    value.map_err(|_| error::BaseConverterError::ParseError { input: input.to_string(), base: from })
+    value.map_err(|_| error::BaseConverterError::ParseError { input: input.to_string(), base: from, label_pos: (0,input.len()) })
 }
 
 pub fn format_output(output: i64, to: Base) ->  String {

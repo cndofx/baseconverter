@@ -2,8 +2,6 @@ use clap::Parser;
 use cli::Cli;
 
 use baseconverter::convert;
-use baseconverter::error::BResult;
-use miette::Context;
 
 mod cli;
 
