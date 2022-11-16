@@ -2,10 +2,15 @@ use error::BResult;
 
 mod error;
 
+#[derive(Clone, clap::ValueEnum)]
 pub enum Base {
+    #[clap(name = "bin")]
     Binary,
+    #[clap(name = "oct")]
     Octal,
+    #[clap(name = "dec")]
     Decimal,
+    #[clap(name = "hex")]
     Hexadecimal,
 }
 
