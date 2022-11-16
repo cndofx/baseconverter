@@ -2,7 +2,7 @@ use crate::error::BResult;
 
 pub mod error;
 
-#[derive(Clone, Copy, clap::ValueEnum)]
+#[derive(Debug, Clone, Copy, clap::ValueEnum)]
 pub enum Base {
     #[clap(name = "bin")]
     Binary,
@@ -37,12 +37,12 @@ pub fn strip_input<'a>(input: &'a str, from: Base) -> &'a str {
 pub fn parse_input(input: &str, from: Base) -> BResult<i64> {
     let stripped = strip_input(input, from);
     let value = match from {
-        Base::Binary => i64::from_str_radix(stripped, 2)?,
-        Base::Octal => i64::from_str_radix(stripped, 8)?,
-        Base::Hexadecimal => i64::from_str_radix(stripped, 16)?,
-        Base::Decimal => i64::from_str_radix(stripped, 10)?,
+        Base::Binary => i64::from_str_radix(stripped, 2),
+        Base::Octal => i64::from_str_radix(stripped, 8),
+        Base::Hexadecimal => i64::from_str_radix(stripped, 16),
+        Base::Decimal => i64::from_str_radix(stripped, 10),
     };
-    Ok(value)
+    value.map_err(|_| error::BaseConverterError::ParseError { input: input.to_string(), base: from })
 }
 
 pub fn format_output(output: i64, to: Base) ->  String {
