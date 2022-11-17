@@ -8,6 +8,10 @@ mod cli;
 fn main() -> miette::Result<()> {
     let cli = Cli::parse();
     let (input, output) = convert(&cli.input_value, cli.input_base, cli.output_base)?;
-    println!("Converted {} ({}) to {} ({})", input, &cli.input_base, output, &cli.output_base);
+    if cli.verbose {
+        println!("Converted {} ({}) to {} ({})", input, &cli.input_base, output, &cli.output_base);
+    } else {
+        println!("{}", output);
+    }
     Ok(())
 }

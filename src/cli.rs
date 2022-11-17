@@ -8,4 +8,6 @@ pub struct Cli {
     pub input_base: Base,
     #[arg(short, long = "output", value_enum, default_value_t = Base::Decimal)]
     pub output_base: Base,
+    #[arg(short, long, help = "Show detailed conversion output")]
+    pub verbose: bool,
 }
