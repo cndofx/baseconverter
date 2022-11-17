@@ -1,3 +1,5 @@
+use error::BaseConverterError;
+
 use crate::error::BResult;
 
 pub mod error;
@@ -25,8 +27,8 @@ impl std::fmt::Display for Base {
     }
 }
 
-pub fn strip_input<'a>(input: &'a str, from: Base) -> &'a str {
-    match from {
+pub fn strip_input<'a>(input: &'a str, base: Base) -> &'a str {
+    match base {
         Base::Binary => input.strip_prefix("0b").unwrap_or(input),
         Base::Octal => input.strip_prefix("0o").unwrap_or(input),
         Base::Hexadecimal => input.strip_prefix("0x").unwrap_or(input),
@@ -34,35 +36,20 @@ pub fn strip_input<'a>(input: &'a str, from: Base) -> &'a str {
     }
 }
 
-pub fn parse_input(input: &str, from: Base) -> BResult<i64> {
-    let stripped = strip_input(input, from);
-    let value = match from {
+pub fn parse_input(input: &str, base: Base) -> BResult<i64> {
+    let stripped = strip_input(input, base);
+    let value = match base {
         Base::Binary => i64::from_str_radix(stripped, 2),
         Base::Octal => i64::from_str_radix(stripped, 8),
         Base::Hexadecimal => i64::from_str_radix(stripped, 16),
         Base::Decimal => i64::from_str_radix(stripped, 10),
     };
-    
-    value.map_err(|e| {
-        match e.kind() {
-            std::num::IntErrorKind::InvalidDigit => error::BaseConverterError::ParseError {
-                input: input.to_string(),
-                label_pos: (0, input.len()),
-                base: from,
-            },
-            std::num::IntErrorKind::PosOverflow | std::num::IntErrorKind::NegOverflow => {
-                error::BaseConverterError::OverflowError {
-                    input: input.to_string(),
-                    label_pos: (0, input.len()),
-                }
-            }
-            _ => error::BaseConverterError::UnknownError,
-        }
-    })
+
+    value.map_err(|e| BaseConverterError::from_parse_error(e, input, base))
 }
 
-pub fn format_output(output: i64, to: Base) -> String {
-    match to {
+pub fn format_output(output: i64, base: Base) -> String {
+    match base {
         Base::Binary => format!("0b{:b}", output),
         Base::Octal => format!("0o{:o}", output),
         Base::Hexadecimal => format!("0x{:X}", output),
